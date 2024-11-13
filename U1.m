@@ -56,7 +56,7 @@ R_iy = sqrt(2) * F_b - (F_K + F_D + R_yy)
 R_yz = (H_bi * r + V_bi * b1 - (F_b *b2)/sqrt(2) - (F_b / sqrt(2)) * (b2 + 2* b_b) - V_by * (L-b1) + H_by * r ) /(L-2*b1)
 R_iz = -sqrt(2) * F_b - V_bi - V_by - R_yz 
 
-% Kod för framtaging av moment och krafter för godtyckligt snitt (?)
+% Kod för framtaging av moment och krafter för godtyckligt snitt
 x = linspace(0, L, 100); % diskretisering av balk
 
 for i = 1:length(x)
@@ -65,18 +65,18 @@ for i = 1:length(x)
 
     % Låt enbart krafter aktiveras då de skulle tas hänsyn till då ett
     % moment och tvärkraftsdiagram (snittning) konstrueras från en upplagd balk.
-    % Detta gör att "aktiveringen" beror på xi (var på balken i x-led).
-    % Alla krafter som har "aktiveringsegenskapen" betecknas enligt
-    % "F_" ifall den var "F" innan
-    % om det står ett index 1 eller 2 efter en krafts underscore innebär det att
-    % den är uppdelad i 2. 1 är den till vänster och 2 den till höger
-    % t.ex. F_D uppdelas i F_D_1 och F_D_2
+    % Detta gör att "aktiveringen" beror på xi (var på balken i x-led)
 
 
-    % if x < L tekniskt sett men blir sant för alla iterationer här
-    F_D_1 = F_D;
-    V_bi_ = V_bi;
-    H_bi_ = H_bi;
+    if xi == 0 %balkens vänsterände
+        F_D_1 = 0;
+        V_bi_ = 0;
+        H_bi_ = 0;
+    else
+        F_D_1 = F_D;
+        V_bi_ = V_bi;
+        H_bi_ = H_bi;
+    end
 
     if xi < b1
         R_ix_ = 0;
@@ -124,6 +124,12 @@ for i = 1:length(x)
         H_by_ = 0;  
     end
 
+    if (b1 < xi) && (xi < L-b1)
+        d_ = D;
+    else
+        d_ = d;
+    end
+
     % Dessa ekvationer härldes från position x=L dvs motsvarande balkens
     % högerände men gäller för godtyckligt x eftersom kratferna nu enbart
     % aktiveras om det gällande snittet har passerat det x värde för vilket
@@ -149,21 +155,86 @@ for i = 1:length(x)
     % Normalkaft x
     N_x(i) = H_bi_ - R_ix_ + H_by_;
 
+    dvek(i) = d_;
+
+    A = pi*d_^2 / 4; % tvärsnittsarea
+    I = pi * (d_/2)^4 /4; % areatröghetsmoment
+    zeta1 = d_/2;
+    zeta2 = -d_/2;
+
+    sigma1(i) = N_x(i)/A + sqrt(M_y(i)^2+M_z(i)^2)/I*zeta1; % normalspänning
+    sigma2(i) = N_x(i)/A + sqrt(M_y(i)^2+M_z(i)^2)/I*zeta2; % normlspänning motsatt sida
+
+    ww = pi/16 * d_^3; % vridmotstånd?
+
+    tau_x(i) = M_x(i)/ww; % vridskjuvpänning
+
+    tau_y(i) = T_y(i)/A; % skjuvning y
+
+    tau_z(i) = T_z(i)/A; % skjuvning z
+
+    tau_yz(i) = sqrt(T_y(i)^2+T_z(i)^2)/A; % maximal skjuving i yz-planet
+
+
     i = i+1;
 end
 
-figure (1)
-plot(x, M_x)
+% Plot för moment (Mx, My, Mz)
+figure(1)
+plot(x, M_x, 'b', 'LineWidth', 1.5)
 hold on
-plot(x, M_y)
-hold on
-plot(x, M_z)
-hold on
+plot(x, M_y, 'r', 'LineWidth', 1.5)
+plot(x, M_z, 'g', 'LineWidth', 1.5)
+hold off
+title('Moment längs x, y och z axlarna')
+xlabel('x [m]')
+ylabel('Moment [Nm]')
+legend('M_x', 'M_y', 'M_z')
+grid on
 
+% Plot för krafter (Nx, Ty, Tz)
 figure(2)
-plot(x, N_x)
+plot(x, N_x, 'b', 'LineWidth', 1.5)
 hold on
-plot(x, T_y)
+plot(x, T_y, 'r', 'LineWidth', 1.5)
+plot(x, T_z, 'g', 'LineWidth', 1.5)
+hold off
+title('Krafter längs x, y och z axlarna')
+xlabel('x [m]')
+ylabel('Krafter [N]')
+legend('N_x', 'T_y', 'T_z')
+grid on
+
+% Plot för normalspänningar (sigma1, sigma2)
+figure(3)
+plot(x, sigma1, 'b', 'LineWidth', 1.5)
 hold on
-plot(x, T_z)
+plot(x, sigma2, 'r', 'LineWidth', 1.5)
+hold off
+title('Normalspänningar (\sigma_1 och \sigma_2)')
+xlabel('x [m]')
+ylabel('Spänning [Pa]')
+legend('\sigma_1', '\sigma_2')
+grid on
+
+% Plot för skjuvspänningar (tau_yz, tau_y, tau_z)
+figure(4)
+plot(x, tau_yz, 'b', 'LineWidth', 1.5)
 hold on
+plot(x, tau_y, 'r', 'LineWidth', 1.5)
+plot(x, tau_z, 'g', 'LineWidth', 1.5)
+hold off
+title('Skjuvspänningar (\tau_{yz}, \tau_{y}, \tau_{z})')
+xlabel('x [m]')
+ylabel('Skjuvspänning [Pa]')
+legend('\tau_{yz}', '\tau_{y}', '\tau_{z}')
+grid on
+
+% Plot för skjuvspänning längs x (tau_x)
+figure(5)
+plot(x, tau_x, 'b', 'LineWidth', 1.5)
+title('Skjuvspänning längs x (\tau_{x})')
+xlabel('x [m]')
+ylabel('Skjuvspänning [Pa]')
+legend('\tau_{x}')
+grid on
