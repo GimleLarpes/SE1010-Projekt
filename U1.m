@@ -66,6 +66,11 @@ for i = 1:length(x)
     % Låt enbart krafter aktiveras då de skulle tas hänsyn till då ett
     % moment och tvärkraftsdiagram (snittning) konstrueras från en upplagd balk.
     % Detta gör att "aktiveringen" beror på xi (var på balken i x-led)
+    % Om en kraft tidigare betecknat F betecknas F_ är den omgjord till att
+    % aktiveras vid ett viss x-värde. Om en kraft istället betecknas F_1 eller
+    % F_2 är den omgjord till att aktiveras och uppdelad så att samma typ av 
+    % kraft kan aktiveras vid olika tillfällen. Dett agäller bromskraften och
+    % F_D som bägge finns simultant vid olika x-värden
 
 
     if xi == 0 %balkens vänsterände
