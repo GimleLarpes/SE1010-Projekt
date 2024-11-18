@@ -1,5 +1,3 @@
-%Parametrar
-
 v = 120/3.6;
 R = 14;
 m = 140;
@@ -17,12 +15,13 @@ d_h = 0.33;
 r_d = 0.11;
 r_b = 0.09;
 r = 0.165;
-b_b = 0.28;
+b_b = 0.28; % 0 < b_b < L/2 - b1
 b_d = 0.0;
 D = 0.028;
 d = 0.6 * D;
 
 b2 = L/2 - b_b - b1;
+
 
 
 
@@ -32,8 +31,10 @@ gamma_max = 1/v * sqrt((R*L*g)/(2*h));
 
 if gamma == 0
     v = v;
+    curve_stopper = 0
 else
     v = gamma * v; % Aktivera för kurvtagning
+    curve_stopper = 1
 end
 
 
@@ -44,11 +45,11 @@ F_K = F_D * r / r_d; %Chain force, demands F_b = 0
 
 V_b = (F_L * (h + h_1) + m*y_acc*h + m*g*d_f) / (d_f + d_b);
 
-V_by = 1/2 * V_b * (1 + (2*(v)^2*h) / (L*g*R));
-V_bi = 1/2 * V_b * (1 - (2*(v)^2*h) / (L*g*R));
+V_by = 1/2 * V_b * (1 + curve_stopper * (2*(v)^2*h) / (L*g*R));
+V_bi = 1/2 * V_b * (1 - curve_stopper * (2*(v)^2*h) / (L*g*R));
 
-H_by = V_by/V_b * (m*(v)^2*d_f) / (R*(d_f + d_b));
-H_bi = V_bi/V_b * (m*(v)^2*d_f) / (R*(d_f + d_b));
+H_by = V_by/V_b * (m*(v)^2*d_f) / (R*(d_f + d_b)) * curve_stopper;
+H_bi = V_bi/V_b * (m*(v)^2*d_f) / (R*(d_f + d_b)) * curve_stopper;
 
 R_ix = H_bi + H_by
 R_yy = (((F_D/2)*b1 + (F_b *b2)/sqrt(2) - F_K * (L/2 - b1) + (F_b/sqrt(2)) * (L/2 - b1 + b_b) - F_D/2 * (L - b1)) / (L - 2*b1))
