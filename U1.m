@@ -181,6 +181,9 @@ for i = 1:length(x)
 
     tau_yz(i) = sqrt(T_y(i)^2+T_z(i)^2)/A; % maximal skjuving i yz-planet
 
+    von_mises(i) = sqrt ( max(sigma1(i),sigma2(i))^2 + 3*tau_x(i)^2 + 3*tau_y(i)^2 + 3*tau_z(i)^2 );
+
+
 
     i = i+1;
 end
@@ -244,3 +247,13 @@ xlabel('x [m]')
 ylabel('Skjuvspänning [Pa]')
 legend('\tau_{x}')
 grid on
+
+% Plot för von mises 
+figure(6)
+plot(x, von_mises, 'b', 'LineWidth', 1.5)
+title('Effektivspänning von mises')
+xlabel('x [m]')
+ylabel('Spänning [Pa]')
+legend('VM')
+grid on
+
