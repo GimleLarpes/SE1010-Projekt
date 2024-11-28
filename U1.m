@@ -1,3 +1,7 @@
+%Parametrar
+
+clear all close all clc
+
 v = 120/3.6;
 R = 14;
 m = 140;
@@ -17,31 +21,47 @@ r_b = 0.09;
 r = 0.165;
 b_b = 0.28; % 0 < b_b < L/2 - b1
 b_d = 0.0;
-D = 0.028;
+D = 0.041; %0.028
 d = 0.6 * D;
+
+step_b_d = 100;
+
+for iter = 1:step_b_d
+
+    b_b = b1 + (L/2-b1)/step_b_d*iter;
+    b_b = 0.31 % vald b_b
+
 
 b2 = L/2 - b_b - b1;
 
 
 
-
-y_acc = 0;
-gamma = 0.25; % sätt gamma = 0 om rakkörning
+y_acc = -10;
+gamma = 0.25*0; % sätt gamma = 0 om rakkörning
 gamma_max = 1/v * sqrt((R*L*g)/(2*h));
 
 if gamma == 0
     v = v;
-    curve_stopper = 0
+    curve_stopper = 0;
 else
     v = gamma * v; % Aktivera för kurvtagning
-    curve_stopper = 1
+    curve_stopper = 1;
 end
 
 
 F_L = 1/2 * rho_luft * c * A * v^2;
 F_D = F_L + m*y_acc;
-F_b = 0*(-F_D * r) / (2*r_b); %breaking force, demands F_K = 0
-F_K = F_D * r / r_d; %Chain force, demands F_b = 0
+
+if y_acc >= 0
+    f1 = 0;
+    f2 = 1;
+else
+    f1 = 1;
+    f2 = 0;
+end
+
+F_b = f1*(-F_D * r) / (2*r_b); %breaking force, demands F_K = 0
+F_K = f2*F_D * r / r_d; %Chain force, demands F_b = 0
 
 V_b = (F_L * (h + h_1) + m*y_acc*h + m*g*d_f) / (d_f + d_b);
 
@@ -55,7 +75,10 @@ R_ix = H_bi + H_by
 R_yy = (((F_D/2)*b1 + (F_b *b2)/sqrt(2) - F_K * (L/2 - b1) + (F_b/sqrt(2)) * (L/2 - b1 + b_b) - F_D/2 * (L - b1)) / (L - 2*b1))
 R_iy = sqrt(2) * F_b - (F_K + F_D + R_yy) 
 R_yz = (H_bi * r + V_bi * b1 - (F_b *b2)/sqrt(2) - (F_b / sqrt(2)) * (b2 + 2* b_b) - V_by * (L-b1) + H_by * r ) /(L-2*b1)
-R_iz = -sqrt(2) * F_b - V_bi - V_by - R_yz 
+R_iz = -sqrt(2) * F_b - V_bi - V_by - R_yz
+
+Rvek(iter) = R_yy
+
 
 % Kod för framtaging av moment och krafter för godtyckligt snitt
 x = linspace(0, L, 100); % diskretisering av balk
@@ -67,14 +90,9 @@ for i = 1:length(x)
     % Låt enbart krafter aktiveras då de skulle tas hänsyn till då ett
     % moment och tvärkraftsdiagram (snittning) konstrueras från en upplagd balk.
     % Detta gör att "aktiveringen" beror på xi (var på balken i x-led)
-    % Om en kraft tidigare betecknat F betecknas F_ är den omgjord till att
-    % aktiveras vid ett viss x-värde. Om en kraft istället betecknas F_1 eller
-    % F_2 är den omgjord till att aktiveras och uppdelad så att samma typ av 
-    % kraft kan aktiveras vid olika tillfällen. Dett agäller bromskraften och
-    % F_D som bägge finns simultant vid olika x-värden
 
 
-    if xi == 0 %balkens vänsterände
+    if xi <= 0 %balkens vänsterände - ändrat!
         F_D_1 = 0;
         V_bi_ = 0;
         H_bi_ = 0;
@@ -120,7 +138,7 @@ for i = 1:length(x)
         R_yz_ = R_yz;
     end
 
-    if xi == L % balkens högerände
+    if xi >= L % balkens högerände - ändrat!
         F_D_2 = F_D;
         V_by_ = V_by;
         H_by_ = H_by;
@@ -147,13 +165,13 @@ for i = 1:length(x)
     T_z(i) = -(V_bi_ + R_iz_ + 1/sqrt(2) * F_b_1 + 1/sqrt(2) * F_b_2 + R_yz_ + V_by_);
 
     % Moment y
-    M_y(i) = - H_bi_ * r - V_bi * xi - R_iz_ * (xi - b1) - 1/sqrt(2) * F_b_1 * (xi-(L/2 - b_b)) - F_b_2 * (xi-(L/2 + b_b)) - R_yz_ * (xi-(L - b1)) - H_by_*r;
+    M_y(i) = - H_bi_ * r - V_bi * xi - R_iz_ * (xi - b1) - 1/sqrt(2) * F_b_1 * (xi-(L/2 - b_b)) - 1/sqrt(2) * F_b_2 * (xi-(L/2 + b_b)) - R_yz_ * (xi-(L - b1)) - H_by_*r;
 
     % Tvärkraft y
     T_y(i) = - F_D_1 /2 - R_iy_ + + 1/sqrt(2) * F_b_1 - F_K_ + 1/sqrt(2) * F_b_2 - R_yy_ - F_D_2 /2;
 
     % Moment z
-    M_z(i) = - F_D_1 /2 * xi - R_iy_ * (xi - b1) + 1/sqrt(2) * F_b_1 * (xi-(L/2 - b_b)) - F_K_ * (xi-L/2) + F_b_2 * (xi-(L/2 + b_b)) - R_yy_ * (xi-(L - b1)) - F_D_2 /2 * (xi - L);
+    M_z(i) = - F_D_1 /2 * xi - R_iy_ * (xi - b1) + 1/sqrt(2) * F_b_1 * (xi-(L/2 - b_b)) - F_K_ * (xi-L/2) + 1/sqrt(2) * F_b_2 * (xi-(L/2 + b_b)) - R_yy_ * (xi-(L - b1)) - F_D_2 /2 * (xi - L);
 
     % Moment x (reaktionsmoment på torsion)
     M_x(i) = - F_D_1 /2 * r - F_b_1 *r_b + F_K_ * r_d - F_b_2 *r_b - F_D_2 /2 * r;
@@ -183,10 +201,18 @@ for i = 1:length(x)
 
     von_mises(i) = sqrt ( max(sigma1(i),sigma2(i))^2 + 3*tau_x(i)^2 + 3*tau_y(i)^2 + 3*tau_z(i)^2 );
 
-
-
     i = i+1;
+
 end
+
+max_von_mises(iter) = max(von_mises)
+
+end
+
+
+volume_axle = pi*d^2 / 4 * 2 * b1 + pi * D^2 / 4 * (L-2*b1);
+rho_axle = 7850;
+mass_axle = rho_axle * volume_axle;
 
 % Plot för moment (Mx, My, Mz)
 figure(1)
@@ -257,3 +283,14 @@ ylabel('Spänning [Pa]')
 legend('VM')
 grid on
 
+figure(7)
+plot(linspace(b1, L/2-b1, step_b_d), max_von_mises, 'LineWidth', 1.5)
+title('Maximal von Mises-spänning som funktion av b_b')
+xlabel('b_b [m]')
+ylabel('Maximal von Mises-spänning [Pa]')
+grid on
+
+totalmax_von_mises=max(max_von_mises(2:end-1))
+
+ns = 2.8;
+sigma_max_till = 310*10^6 / ns
