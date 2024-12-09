@@ -1,0 +1,19 @@
+Rp_02 = 310;
+Rm = (590 + 690)/2; 
+sigma_u = 200;
+sigma_up = 180;
+
+sigma_ub = 270;
+sigma_ubp = 240;
+
+Kt = 1.42;       
+q = 0.85;        
+Kr = 1.136;        
+lambda = 1;      
+Kd = 1;         
+
+Kf = 1 + q * (Kt-1); 
+r = lambda / (Kf*Kd*Kr)
+
+sigma_ub_red = r*sigma_ub;
+sigma_ubp_red = r*sigma_ubp;
