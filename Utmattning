@@ -1,7 +1,5 @@
 Rp_02 = 310;
 Rm = (590 + 690)/2; 
-sigma_u = 200;
-sigma_up = 180;
 
 sigma_ub = 270;
 sigma_ubp = 240;
@@ -13,7 +11,28 @@ lambda = 1;
 Kd = 1;         
 
 Kf = 1 + q * (Kt-1); 
-r = lambda / (Kf*Kd*Kr)
+r = lambda / (Kf*Kd*Kr);
 
 sigma_ub_red = r*sigma_ub;
 sigma_ubp_red = r*sigma_ubp;
+
+x = [0, sigma_ub, Rm];
+y = [sigma_ub, sigma_ubp, 0];
+x_red = [0, sigma_ub,Rm];
+y_red = [sigma_ub_red, sigma_ubp_red, 0];
+%x_Rp02 = [0,Rp_02];
+%y_Rp02 = [Rp_02,0];
+
+figure;
+hold on;
+plot(x, y, '-o', 'DisplayName', 'Original Stress-Strain', 'LineWidth', 2);
+plot(x_red, y_red, '-o', 'DisplayName', 'Reduced Stress-Strain', 'LineWidth', 2);
+%plot(x_Rp02, y_Rp02, '--', 'DisplayName', 'Rp_{02}', 'LineWidth', 2);
+
+% Labels and title
+xlabel('Stress (\sigma)');
+ylabel('Strain');
+title('Stress-Strain Curve for Kolstål 141650-01');
+legend('show');
+grid on;
+hold off;
