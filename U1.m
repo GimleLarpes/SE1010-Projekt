@@ -21,14 +21,14 @@ r_b = 0.09;
 r = 0.165;
 b_b = 0.28; % 0 < b_b < L/2 - b1
 b_d = 0.0;
-D = 0.041; %0.028
+D = 0.05 %0.041; %0.028
 d = 0.6 * D;
 
-step_b_d = 100;
+step_b_d = 1;
 
 for iter = 1:step_b_d
 
-    b_b = b1 + (L/2-b1)/step_b_d*iter;
+    %b_b = b1 + (L/2-b1)/step_b_d*iter;
     b_b = 0.31 % vald b_b
 
 
@@ -61,7 +61,7 @@ else
 end
 
 F_b = f1*(-F_D * r) / (2*r_b); %breaking force, demands F_K = 0
-F_K = f2*F_D * r / r_d; %Chain force, demands F_b = 0
+F_K = f2*F_D * r / r_d*0; %Chain force, demands F_b = 0
 
 V_b = (F_L * (h + h_1) + m*y_acc*h + m*g*d_f) / (d_f + d_b);
 
@@ -201,6 +201,9 @@ for i = 1:length(x)
 
     von_mises(i) = sqrt ( max(sigma1(i),sigma2(i))^2 + 3*tau_x(i)^2 + 3*tau_y(i)^2 + 3*tau_z(i)^2 );
 
+    momentet(i) = sqrt(M_y(i)^2+M_z(i)^2);
+
+
     i = i+1;
 
 end
@@ -290,6 +293,11 @@ xlabel('b_b [m]')
 ylabel('Maximal von Mises-spänning [Pa]')
 grid on
 
+totalmax_von_mises=max(max_von_mises(2:end-1))
+
+
+ns = 2.8;
+sigma_max_till = 310*10^6 / ns
 totalmax_von_mises=max(max_von_mises(2:end-1))
 
 ns = 2.8;
