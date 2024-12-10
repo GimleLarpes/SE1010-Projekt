@@ -25,15 +25,16 @@ y_red = [sigma_ub_red, sigma_ubp_red, 0];
 
 figure;
 hold on;
-plot(x, y, '-o', 'DisplayName', 'Original Stress-Strain', 'LineWidth', 2);
-plot(x_red, y_red, '-o', 'DisplayName', 'Reduced Stress-Strain', 'LineWidth', 2);
-plot(0, 81.2, '-o', 'DisplayName', 'Our case', 'LineWidth', 5);
+plot(x, y, 'b' , 'DisplayName', 'Fatigue Limit', 'LineWidth', 2);
+plot(x_red, y_red, 'r', 'DisplayName', 'Reduced Fatigue Limit', 'LineWidth', 2);
+plot(0, 81.2, 'og', 'DisplayName', '(\sigma_{max})', 'LineWidth', 5.5);
+plot(0, 81.2 * 1.9, 'o', 'DisplayName', 'Safe (\sigma_{max})', 'LineWidth', 5.5);
 %plot(x_Rp02, y_Rp02, '--', 'DisplayName', 'Rp_{02}', 'LineWidth', 2);
 
 % Labels and title
-xlabel('Stress (\sigma)');
-ylabel('Strain');
-title('Stress-Strain Curve for Kolstål 141650-01');
+xlabel(' (\sigma_m)');
+ylabel('(\sigma_a)');
+title('Haigh - Diagram');
 legend('show');
 grid on;
 hold off;
